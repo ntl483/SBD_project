@@ -1,6 +1,9 @@
+from data_producer import DataProducer
+
 
 def main():
-    print("hello")
+    dataProducer = DataProducer()
+    dataProducer.createFromInput()
 
 
 if __name__ == '__main__':
