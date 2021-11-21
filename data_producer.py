@@ -1,12 +1,16 @@
 import os.path
 import random
 
+
 # masa, ciepło właściwe oraz różnica temperatur
 # masa -> 0.1;1000, dokladnosc do 0.1 kg
 # cieplo wlasciwe -> 0.1; 2500 J/kg*K dokladnosc do 0.1
 # roznica temperatur -> 0.0; 1000 K dokladnosc do 0.1
 
+
 class DataProducer:
+    pageOccupancy: int
+    accesses: int
 
     def __init__(self):
         pass
@@ -15,40 +19,56 @@ class DataProducer:
         path = 'data'
         if os.path.isdir(path):
             files = os.listdir(path)
-            name = 'data_' + str(len(files) + 1) + '.txt'
+            name = 'tape_' + str(len(files) + 1) + '.bin'
         else:
             os.mkdir(path)
-            name = 'data_1.txt'
+            name = 'tape_1.bin'
         path += '/'
-        f = open(path+name, 'x')
-        retPath = path+name
+        f = open(path + name, 'x')
+        retPath = path + name
         return retPath
 
-    def createRandom(self, size):
+    def createRandom(self, size) -> int:
         path = self.getNextFileName()
-        file = open(path, 'w')
+        file = open(path, 'wb')
+        self.pageOccupancy = 0
+        self.accesses = 0
         for i in range(size):
             mass = random.randint(1, 10000)
-            mass /= 10
             specHeat = random.randint(1, 25000)
-            specHeat /= 10
             tempDiff = random.randint(1, 10000)
-            tempDiff /= 10
-            toWrite = str(mass)+"/"+str(specHeat)+"/"+str(tempDiff)+"\n"
-            file.write(toWrite)
+            print(mass, specHeat, tempDiff)
+            file.write(mass.to_bytes(4, 'big'))
+            file.write(specHeat.to_bytes(4, 'big'))
+            file.write(tempDiff.to_bytes(4, 'big'))
+            self.access()
         file.close()
+        return self.accesses
 
     def createFromInput(self):
         path = self.getNextFileName()
-        file = open(path, 'w')
+        file = open(path, 'wb')
         size = input('how many records: ')
         size = int(size)
+        self.accesses = 0
+        self.pageOccupancy = 0
         for _ in range(size):
-            mass = float(input('mass: '))
-            specHeat = float(input('specific heat: '))
-            tempDiff = float(input('temperature difference: '))
-            toWrite = str(mass) + "/" + str(specHeat) + "/" + str(tempDiff) + "\n"
-            file.write(toWrite)
+            mass = int(input('mass: '))
+            specHeat = int(input('specific heat: '))
+            tempDiff = int(input('temperature difference: '))
+            file.write(mass.to_bytes(4, 'big'))
+            file.write(specHeat.to_bytes(4, 'big'))
+            file.write(tempDiff.to_bytes(4, 'big'))
+            self.access()
         file.close()
+        return self.accesses
 
-
+    def access(self):
+        if self.pageOccupancy >= 4000 or self.pageOccupancy == 0:
+            # new page -> one access
+            self.accesses += 1
+            self.pageOccupancy = 1
+        else:
+            # same page -> 2 acc
+            self.pageOccupancy += 3*4
+            self.accesses += 2
