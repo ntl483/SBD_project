@@ -19,10 +19,10 @@ class DataProducer:
         path = 'data'
         if os.path.isdir(path):
             files = os.listdir(path)
-            name = 'tape_' + str(len(files) + 1) + '.bin'
+            name = 'data_' + str(len(files) + 1) + '.bin'
         else:
             os.mkdir(path)
-            name = 'tape_1.bin'
+            name = 'data_1.bin'
         path += '/'
         f = open(path + name, 'x')
         retPath = path + name
@@ -34,10 +34,9 @@ class DataProducer:
         self.pageOccupancy = 0
         self.accesses = 0
         for i in range(size):
-            mass = random.randint(1, 10000)
-            specHeat = random.randint(1, 25000)
-            tempDiff = random.randint(1, 10000)
-            print(mass, specHeat, tempDiff)
+            mass = random.randint(1, 100)
+            specHeat = random.randint(1, 250)
+            tempDiff = random.randint(1, 100)
             file.write(mass.to_bytes(4, 'big'))
             file.write(specHeat.to_bytes(4, 'big'))
             file.write(tempDiff.to_bytes(4, 'big'))

@@ -1,12 +1,13 @@
 from data_producer import DataProducer
-from tape_manager import TapeManager
+from data_manager import DataManager
+from sorter import Sorter
 
 
 def main():
     dataProducer = DataProducer()
-    dataProducer.createRandom(3)
-    a = TapeManager(4)
-    a.readRecord(0)
+    dataProducer.createFromInput()
+    s = Sorter()
+    s.sortFile(5)
 
 
 if __name__ == '__main__':
