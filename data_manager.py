@@ -4,14 +4,17 @@
 # data manager odczytuje blok 4kB
 import os.path
 import string
+from tape import Tape
 
 
 class DataManager:
     filePath: string
     blockSize: int
     discOps: int
+    fileId : int
 
     def __init__(self, fileId):
+        self.fileId = fileId
         self.blockSize = 4000
         self.discOps = 0
         try:
@@ -72,3 +75,12 @@ class DataManager:
         size = os.path.getsize(self.filePath)   # size in bytes
         size /= 12
         return size
+
+    def writeSorted(self, t: Tape):
+        path = "data/sorted_"+str(self.fileId)+".bin"
+        open(path, 'x')
+        file = open(path, 'wb')
+        while not t.empty():
+            file.write(t.getNext().to_bytes(4, 'big'))
+            t.popNext()
+        file.close()
