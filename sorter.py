@@ -1,15 +1,23 @@
+import os
+
 from data_manager import DataManager
 from tape import Tape
+from data_piece import DataPiece
+from plotter import Plotter
 
 
 class Sorter:
+    plotter: Plotter
     phases: int
 
-    def __init__(self):
+    def __init__(self, plotter: Plotter):
         self.phases = 0
+        self.plotter = plotter
 
     def sortFile(self, fileId):
-        dm = DataManager(fileId)
+        self.phases = 0
+        dp = DataPiece()
+        dm = DataManager(fileId, dp)
         t1, t2 = self.createBaseTapes(dm)
         t3 = self.mergeTwoTapes(t1, t2)
 
@@ -18,8 +26,9 @@ class Sorter:
             t3 = self.mergeTwoTapes(t1, t2)
         print("sorted file:")
         t3.printContent()
-        dm.writeSorted(t3)
-        print("phases:", self.phases)
+        # dm.writeSorted(t3)
+        dp.addPh(self.phases)
+        self.plotter.addData(dp)
 
     def createBaseTapes(self, dm: DataManager):
         maxAddress = dm.dataSize()
@@ -72,7 +81,7 @@ class Sorter:
             t2.popNext()
         print("merged:")
         t3.printContent()
-        self.phases+=1
+        self.phases += 1
         return t3
 
     def splitTape(self, t3) -> (Tape, Tape):

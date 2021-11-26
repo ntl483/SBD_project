@@ -5,22 +5,25 @@
 import os.path
 import string
 from tape import Tape
+from data_piece import DataPiece
 
 
 class DataManager:
     filePath: string
     blockSize: int
-    discOps: int
-    fileId : int
+    fileId: int
+    dataPiece: DataPiece
 
-    def __init__(self, fileId):
+    def __init__(self, fileId, dataPiece: DataPiece):
         self.fileId = fileId
         self.blockSize = 4000
-        self.discOps = 0
         try:
             path = 'data/data_' + str(fileId) + '.bin'
             if os.path.isfile(path):
                 self.filePath = 'data/data_' + str(fileId) + '.bin'
+                self.dataPiece = dataPiece
+                size = os.path.getsize(self.filePath)
+                self.dataPiece.setRecords(size / 12)
             else:
                 raise ValueError('file doesnt exist')
         except ValueError as exp:
@@ -33,7 +36,7 @@ class DataManager:
         file = open(self.filePath, 'rb')
         file.seek(int(sector*4000))
         block = file.read(4000)     # read 4 000 bytes = 4kB        TODO what if file is shorter
-        self.discOps += 1
+        self.dataPiece.addAcc(1)
         file.close()
         return block
 
@@ -43,7 +46,7 @@ class DataManager:
         file.write(mass.to_bytes(4, 'big'))
         file.write(specHeat.to_bytes(4, 'big'))
         file.write(tempDiff.to_bytes(4, 'big'))
-        self.discOps += 1
+        self.dataPiece.addAcc(1)
         file.close()
 
     def readRecord(self, address):
@@ -66,7 +69,7 @@ class DataManager:
             file.write(mass.to_bytes(4, 'big'))
             file.write(specHeat.to_bytes(4, 'big'))
             file.write(tempDiff.to_bytes(4, 'big'))
-            self.discOps += 1
+            self.dataPiece.addAcc(1)
             file.close()
         else:
             self.writeBlock(mass, specHeat, tempDiff)
