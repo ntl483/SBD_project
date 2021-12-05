@@ -1,42 +1,62 @@
+import os
+import string
+
+
 class Tape:
-    content: list
     ended: bool
+#    dataManager: DataManager
+    path: string
 
-    def __init__(self):
-        self.content = []
+    def __init__(self, dm, id: int):
         self.ended = False
+        self.dataManager = dm
+        self.initFile(id)
 
-    def addToTape(self, val):
-        self.content.append(val)
+    def addToTape(self, vals):
+        self.dataManager.writeRecord(vals[0], vals[1], vals[2], self.path)
 
     def empty(self) -> bool:
-        if len(self.content) == 0:
+        if os.path.getsize(self.path) == 0:
             return True
         return False
 
     def printContent(self):
-        print(self.content)
+        size = os.path.getsize(self.path)
+        records = int(size/12)
+        values = []
+        #for r in range(records):
+            #[m, h, t] = self.dataManager.readRecord(r, self.path)
+            #values.append(m*h*t)
+        #print(values)
 
-    def getNext(self) -> int:
-        return self.content[0]
+    def getNext(self) -> [int, int, int]:
+        vals = self.dataManager.readRecord(0, self.path)
+
+    def getNextVal(self) -> int:
+        vals = self.dataManager.readRecord(0, self.path)
+        return vals[0]*vals[1]*vals[2]
 
     def popNext(self):
-        if len(self.content) == 1 or self.content[0] > self.content[1]:
+        vals = self.dataManager.readRecord(0, self.path)
+        self.dataManager.removeRecord(self.path)
+        #self.printContent()
+        if os.path.getsize(self.path) == 0 or vals[0]*vals[1]*vals[2] > self.getNextVal():
             self.ended = True
-            #print("run ended")
-        #print("popped:", self.content[0])
-        self.content.pop(0)
+        return vals
 
     def sorted(self) -> bool:
-        a = True
-        for i in range(1, len(self.content)):
-            if self.content[i-1] > self.content[i]:
-                a = False
-                break
-        return a
+        pass
 
     def runEnded(self) -> bool:
         return self.ended
 
     def beginRun(self):
         self.ended = False
+
+    def initFile(self, id: int):
+        self.path = "tapes_" + str(self.dataManager.fileId)
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+        self.path += "/tape_" + str(id) + ".bin"
+        if not os.path.isfile(self.path):
+            open(self.path, 'x')
